@@ -1,0 +1,15 @@
+language: generic
+
+matrix:
+    include:
+        - os: linux
+
+before_install:
+    - sudo apt install jq cabal-install ghc
+
+install:
+    - true
+
+script:
+    - bash -x release.sh init
+    - travis_wait 40 bash -x release.sh bump
