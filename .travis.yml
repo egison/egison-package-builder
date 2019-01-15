@@ -5,6 +5,7 @@ matrix:
         - os: linux
 
 before_install:
+    - sudo apt update
     - sudo apt install jq cabal-install ghc
 
 install:
