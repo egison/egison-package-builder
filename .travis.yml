@@ -1,5 +1,8 @@
 language: generic
 
+# cabal install is failed on trusty
+dist: xenial
+
 matrix:
     include:
         - os: linux
@@ -13,4 +16,4 @@ install:
 
 script:
     - bash -x release.sh init
-    - travis_wait 50 bash -x release.sh bump
+    - travis_wait 40 bash -x release.sh bump
