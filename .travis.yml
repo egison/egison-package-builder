@@ -16,4 +16,4 @@ install:
 
 script:
     - bash -x release.sh init
-    - travis_wait 40 bash -x release.sh bump
+    - travis_wait 60 bash -x release.sh bump
