@@ -20,4 +20,4 @@ script:
     - travis_wait 60 docker run greymd/rpm-egison > egison.tar.gz
     - file egison.tar.gz
     - tar tvf egison.tar.gz
-#    - travis_wait 60 bash -x release.sh bump
+    - travis_wait 60 bash -x release.sh bump

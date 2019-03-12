@@ -41,7 +41,6 @@ get_version () {
 }
 
 bump () {
-  local _sha256hash
   local _release_id
   local _new_release_info
   if [[ "${CURRENT_VERSION}" == "${LATEST_VERSION}" ]];then
@@ -61,14 +60,10 @@ bump () {
 
   cd "${THIS_DIR}/${BUILDER_REPO_NAME}"
 
-  # Edit files
-  _sha256hash=$(shasum -a 256 "${RELEASE_ARCHIVE}" | perl -anle 'print $F[0]')
-  perl -i -pe 's/VERSION = ".*"/VERSION = "'"${LATEST_VERSION}"'"/' "./egison.rb"
-  perl -i -pe 's/sha256 ".*"/sha256 "'"${_sha256hash}"'"/' "./egison.rb"
   echo "${LATEST_VERSION}-$(date +%s)" > "./VERSION"
 
   # Crete versions and make changes to GitHub
-  git add "./VERSION" "./egison.rb"
+  git add "./VERSION"
   git commit -m "[skip ci] Bump version to ${LATEST_VERSION}"
 
   ## Clean tags just in case
@@ -90,7 +85,7 @@ bump () {
 }
 
 build () {
-  docker run rpm-egison > "${RELEASE_ARCHIVE}"
+  docker run greymd/rpm-egison > "${RELEASE_ARCHIVE}"
   echo "${RELEASE_ARCHIVE} is successfully created." >&2
 }
 
