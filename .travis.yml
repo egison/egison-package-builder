@@ -1,13 +1,14 @@
 language: generic
 
-# cabal install is failed on trusty
-dist: xenial
+services:
+  - docker
 
 matrix:
     include:
         - os: linux
 
 before_install:
+    - docker pull greymd/rpm-egison
     - sudo apt update
     - sudo apt install jq
 
@@ -16,7 +17,7 @@ install:
 
 script:
     - bash -x release.sh init
-    - travis_wait 60 docker run rpm-egison > egison.tar.gz
+    - travis_wait 60 docker run greymd/rpm-egison > egison.tar.gz
     - file egison.tar.gz
     - tar tvf egison.tar.gz
 #    - travis_wait 60 bash -x release.sh bump
