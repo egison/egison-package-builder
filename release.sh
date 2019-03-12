@@ -90,26 +90,7 @@ bump () {
 }
 
 build () {
-  local _workdir="work-$RANDOM"
-  git clone -b "${LATEST_VERSION}" \
-    "https://github.com/${BUILD_REPO}.git" "${THIS_DIR}/egison"
-  cd "${THIS_DIR}/egison"
-  cabal update
-  cabal install --only-dependencies
-  # cabal configure --datadir=/usr/local/lib --datasubdir=egison
-  cabal configure --datadir=/usr/lib --datasubdir=egison
-  cabal build
-  mkdir -p "${_workdir}/bin"
-  mkdir -p "${_workdir}/lib/egison"
-  cp "${THIS_DIR}/egison/dist/build/egison/egison" "${_workdir}/bin"
-  cp -rf "${THIS_DIR}/egison/lib" "${_workdir}/lib/egison"
-  # (
-  #   cd "${THIS_DIR}/egison/${_workdir}"
-  #   zip -r "${RELEASE_ARCHIVE}" bin lib
-  # )
-  tar -zcvf "${RELEASE_ARCHIVE}" \
-    -C "${THIS_DIR}/egison/${_workdir}" bin lib
-  rm -rf "${THIS_DIR}/egison"
+  docker run rpm-egison > "${RELEASE_ARCHIVE}"
   echo "${RELEASE_ARCHIVE} is successfully created." >&2
 }
 

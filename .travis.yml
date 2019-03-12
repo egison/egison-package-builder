@@ -9,11 +9,14 @@ matrix:
 
 before_install:
     - sudo apt update
-    - sudo apt install jq cabal-install ghc
+    - sudo apt install jq
 
 install:
     - true
 
 script:
     - bash -x release.sh init
-    - travis_wait 60 bash -x release.sh bump
+    - travis_wait 60 docker run rpm-egison > egison.tar.gz
+    - file egison.tar.gz
+    - tar tvf egison.tar.gz
+#    - travis_wait 60 bash -x release.sh bump
