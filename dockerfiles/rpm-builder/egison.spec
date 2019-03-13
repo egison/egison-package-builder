@@ -1,12 +1,12 @@
 Name:       egison
 Summary:    Egison is a purely functional programming language with non-linear pattern-matching against non-free data types.
-Version:    3.7.14
+Version:    @@@VERSION@@@
 Group:      Applications
 License:    MIT
 Release:    %(date '+%'s)
 URL:        https://egison.org
-Source:     https://github.com/greymd/rpm-egison/archive/egison_linux_x86_64_%{version}.tar.gz
-BuildArch:  x86_64
+Source:     https://github.com/greymd/rpm-egison/archive/egison_linux_%{architecture}_%{version}.tar.gz
+BuildArch:  %(uname -m)
 Vendor:     Egi, Satoshi <egison at egison dot org>
 Provides:   egison
 
