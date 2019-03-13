@@ -5,8 +5,8 @@ Group:      Applications
 License:    MIT
 Release:    %(date '+%'s)
 URL:        https://egison.org
-Source:     https://github.com/greymd/rpm-egison/archive/%{version}.tar.gz
-BuildArch:  noarch
+Source:     https://github.com/greymd/rpm-egison/archive/egison_linux_x86_64_%{version}.tar.gz
+BuildArch:  x86_64
 Vendor:     Egi, Satoshi <egison at egison dot org>
 Provides:   egison
 

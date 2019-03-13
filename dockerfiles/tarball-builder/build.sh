@@ -14,6 +14,9 @@ readonly REPODIR="${HOME}/egison"
   mkdir -p "${WORKDIR}"{/bin,/lib/egison}
   cp "${REPODIR}/dist/build/egison/egison" "${WORKDIR}/bin"
   cp -rf "${REPODIR}/lib" "${WORKDIR}/lib/egison"
-  tar -zcvf "${REPODIR}.tar.gz" -C "${WORKDIR}" bin lib
+  cp "${REPODIR}/LICENSE" "${WORKDIR}/LICENSE"
+  cp "${REPODIR}/README.md" "${WORKDIR}/README.md"
+  cp "${REPODIR}/THANKS.md" "${WORKDIR}/THANKS.md"
+  tar -zcvf "${REPODIR}.tar.gz" -C "${WORKDIR}" bin lib LICENSE README.md THANKS.md
 } >&2
 cat "${HOME}/egison.tar.gz"

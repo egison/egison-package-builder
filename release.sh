@@ -86,7 +86,10 @@ bump () {
 
 build () {
   docker run greymd/rpm-egison > "${RELEASE_ARCHIVE}"
-  echo "${RELEASE_ARCHIVE} is successfully created." >&2
+  file "${RELEASE_ARCHIVE}"
+  {
+    file "${RELEASE_ARCHIVE}" | grep 'gzip compressed'
+  } && echo "${RELEASE_ARCHIVE} is successfully created." >&2
 }
 
 get_release_list () {
