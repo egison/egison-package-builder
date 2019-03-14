@@ -85,7 +85,7 @@ bump () {
 }
 
 build () {
-  docker run greymd/rpm-egison > "${RELEASE_ARCHIVE}"
+  docker run greymd/egison-tarball-builder > "${RELEASE_ARCHIVE}"
   file "${RELEASE_ARCHIVE}"
   {
     file "${RELEASE_ARCHIVE}" | grep 'gzip compressed'

@@ -8,7 +8,6 @@ matrix:
         - os: linux
 
 before_install:
-    - docker pull greymd/rpm-egison
     - sudo apt update
     - sudo apt install jq
 
