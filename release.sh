@@ -41,9 +41,7 @@ get_version () {
 }
 
 get_release_list () {
-  curl -v -H "User-Agent: Travis/1.0" \
-    -H "Authorization: token $GITHUB_AUTH" \
-    "${RELEASE_API_URL}"
+  curl "${COMMON_HEADER[@]}" "${RELEASE_API_URL}"
 }
 
 delete_release () {
@@ -81,7 +79,7 @@ upload_assets () {
 
 get_latest_release () {
   local _repo="$1"
-  curl -f -v -H "User-Agent: Travis/1.0" \
+  curl "${COMMON_HEADER[@]}" \
        -L "https://api.github.com/repos/${_repo}/releases/latest" > "./latest.json"
   # shellcheck disable=SC2181
   if [[ $? != 0 ]] || [[ ! -s "./latest.json" ]]; then
