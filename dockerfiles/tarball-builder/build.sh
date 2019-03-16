@@ -3,13 +3,17 @@ set -ue
 
 readonly REPODIR="${HOME}/egison"
 
+# Make static link for libtinfo to suppress error
+## Like: https://github.com/smallhadroncollider/taskell/issues/12
+readonly GCC_OPT='-pgml gcc "-optl-Wl,--allow-multiple-definition" "-optl-Wl,--whole-archive" "-optl-Wl,-Bstatic" "-optl-Wl,-ltinfo" "-optl-Wl,-Bdynamic" "-optl-Wl,--no-whole-archive"'
 {
   git clone https://github.com/egison/egison.git "${REPODIR}"
   cd "${REPODIR}"
   LATEST_TAG=$(cd "${REPODIR}" && git describe --abbrev=0 --tags)
+  sed -i "/Executable egison/,\${s/ghc-options.*/& $GCC_OPT/}" egison.cabal
   cabal update
   cabal install --only-dependencies
-  cabal configure --datadir=/usr/lib --datasubdir=egison --disable-executable-dynamic
+  cabal configure --datadir=/usr/lib --datasubdir=egison
   cabal build
   WORKDIR="${HOME}/work"
   BUILDROOT="${WORKDIR}/egison-${LATEST_TAG}"
