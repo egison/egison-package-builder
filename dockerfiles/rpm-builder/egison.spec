@@ -30,6 +30,7 @@ install -d -m 0755 %{buildroot}%{_libdir}
 %doc README.md THANKS.md
 %license LICENSE
 %attr(0755, root, root) %{_bindir}/*
+%attr(0755, root, root) %{_libdir}/*
 
 %clean
 %{__rm} -rf %{buildroot}
