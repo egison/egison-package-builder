@@ -7,5 +7,5 @@ RUN apt update && \
 RUN apt clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# COPY build.sh /tmp
+COPY deb-template /tmp/deb-template
 # CMD ["bash", "/tmp/build.sh"]

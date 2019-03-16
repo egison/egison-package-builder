@@ -1,0 +1,18 @@
+Source: egison
+Version: 3.7.14
+Section: utils
+Priority: optional
+Maintainer: Satoshi, Egi <greengregson@gmail.com>
+Build-Depends: debhelper (>=9)
+Standards-Version: 3.9.7
+Homepage: https://www.egison.org
+Vcs-Git: https://github.com/egison/egison.git
+Vcs-Browser: https://github.com/egison/egison
+
+Package: egison
+Version: 3.7.14
+Section: contrib/utils
+Architecture: amd64
+Maintainer: Satoshi, Egi <greengregson@gmail.com>
+Description: <The Egison Programming Language>
+ <Egison is a functional programming language featuring its expressive pattern-matching facility. Egison allows users to define efficient and expressive pattern-matching methods for arbitrary user-defined data types including non-free data types such as lists, multisets, sets, trees, graphs, and mathematical expressions. This is the repository of the interpreter of Egison.>
