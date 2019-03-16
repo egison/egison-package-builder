@@ -8,5 +8,3 @@ RUN apt clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY build.sh /tmp
-
-CMD ["bash", "/tmp/build.sh"]

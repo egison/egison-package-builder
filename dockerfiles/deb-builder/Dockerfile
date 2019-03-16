@@ -10,4 +10,3 @@ RUN apt clean && \
 COPY deb-template /tmp/deb-template
 COPY build.sh /tmp
 COPY changelog.sh /tmp
-# CMD ["bash", "/tmp/build.sh"]
