@@ -25,7 +25,7 @@ readonly COMMON_HEADER=("-H" "User-Agent: Travis/1.0" "-H" "Authorization: token
 readonly RELEASE_API_URL="https://api.github.com/repos/${BUILDER_REPO}/releases"
 
 # Initialize SSH keys
-init () {
+init_ssh () {
   printf "Host github.com\\n\\tStrictHostKeyChecking no\\n" >> "$HOME/.ssh/config"
   echo "${ID_RSA}" | base64 --decode | gzip -d > "$HOME/.ssh/id_rsa"
   chmod 600 "$HOME/.ssh/id_rsa"
@@ -36,60 +36,8 @@ init () {
 get_version () {
   LATEST_VERSION=$(get_latest_release "${BUILD_REPO}")
   CURRENT_VERSION=$(get_latest_release "${BUILDER_REPO}")
-  RELEASE_ARCHIVE="${TRAVIS_BUILD_DIR:-$THIS_DIR}/${FNAME}_${LATEST_VERSION}.tar.gz"
+  RELEASE_ARCHIVE="${TRAVIS_BUILD_DIR:-$THIS_DIR}/${FNAME}_${LATEST_VERSION}"
   readonly LATEST_VERSION CURRENT_VERSION RELEASE_ARCHIVE
-}
-
-bump () {
-  local _release_id
-  local _new_release_info
-  if [[ "${CURRENT_VERSION}" == "${LATEST_VERSION}" ]];then
-    echo "Skip git push. It is latest version." >&2
-    exit 0
-  fi
-  # Build tarball
-  ( build )
-  if [[ ! -s "${RELEASE_ARCHIVE}" ]];then
-    echo "Failed to create '${RELEASE_ARCHIVE}'"
-    exit 1
-  fi
-
-  git clone -b "${TARGET_BRANCH}" \
-    "git@github.com:${BUILDER_REPO}.git" \
-    "${THIS_DIR}/${BUILDER_REPO_NAME}"
-
-  cd "${THIS_DIR}/${BUILDER_REPO_NAME}"
-
-  echo "${LATEST_VERSION}-$(date +%s)" > "./VERSION"
-
-  # Crete versions and make changes to GitHub
-  git add "./VERSION"
-  git commit -m "[skip ci] Bump version to ${LATEST_VERSION}"
-
-  ## Clean tags just in case
-  _release_id=$(get_release_list | jq '.[] | select(.tag_name == "'"${LATEST_VERSION}"'") | .id')
-  ## If there is already same name of the release, delete it.
-  if [[ "${_release_id}" != "" ]]; then
-    delete_release "${_release_id}" || exit 1
-    git push origin :"${LATEST_VERSION}"  || true
-    git tag -d "${LATEST_VERSION}" || true
-  fi
-
-  ## Push changes
-  git push origin "${TARGET_BRANCH}"
-
-  # Create new release
-  _new_release_info=$(create_release "${LATEST_VERSION}" "${TARGET_BRANCH}")
-  _upload_url=$(echo "${_new_release_info}" | jq -r .upload_url | perl -pe 's/{.*}//')
-  upload_assets "${_upload_url}" "${RELEASE_ARCHIVE}"
-}
-
-build () {
-  docker run greymd/egison-tarball-builder > "${RELEASE_ARCHIVE}"
-  file "${RELEASE_ARCHIVE}"
-  {
-    file "${RELEASE_ARCHIVE}" | grep 'gzip compressed'
-  } && echo "${RELEASE_ARCHIVE} is successfully created." >&2
 }
 
 get_release_list () {
@@ -121,8 +69,10 @@ create_release () {
 }
 
 upload_assets () {
-  local _url="$1"; shift
+  local _tag="$1"; shift
   local _file="$1"; shift
+  local _url
+  _url="$(get_upload_url "${_tag}")"
   curl "${COMMON_HEADER[@]}" \
     -H "Content-Type: $(file -b --mime-type "${_file}")" \
     --data-binary @"${_file}" \
@@ -141,17 +91,97 @@ get_latest_release () {
   rm "./latest.json"
 }
 
+build_tarball () {
+  local _file="$1"
+  docker run greymd/egison-tarball-builder bash /tmp/build.sh > "${_file}"
+  file "${_file}"
+  {
+    file "${_file}" | grep 'gzip compressed'
+  } && echo "${_file} is successfully created." >&2
+  if [[ ! -s "${_file}" ]];then
+    echo "Failed to create '${_file}'"
+    exit 1
+  fi
+}
+
+build_rpm () {
+  local _file="$1" ;shift
+  local _ver="$1"
+  docker run greymd/egison-rpm-builder bash /tmp/build.sh "${_ver}" > "${_file}"
+  file "${_file}"
+  file "${_file}" | grep 'rpm'
+  echo "${_file} is successfully created." >&2
+  if [[ ! -s "${_file}" ]];then
+    echo "Failed to create '${_file}'"
+    exit 1
+  fi
+}
+
+release_check () {
+  if [[ "${CURRENT_VERSION}" == "${LATEST_VERSION}" ]];then
+    echo "Skip git push. It is latest version." >&2
+    exit 0
+  fi
+}
+
+bump_version () {
+  local _release_id
+
+  git clone -b "${TARGET_BRANCH}" \
+    "git@github.com:${BUILDER_REPO}.git" \
+    "${THIS_DIR}/${BUILDER_REPO_NAME}"
+
+  cd "${THIS_DIR}/${BUILDER_REPO_NAME}"
+
+  echo "${LATEST_VERSION}-$(date +%s)" > "./VERSION"
+
+  # Crete versions and make changes to GitHub
+  git add "./VERSION"
+  git commit -m "[skip ci] Bump version to ${LATEST_VERSION}"
+
+  ## Clean tags just in case
+  _release_id=$(get_release_list | jq '.[] | select(.tag_name == "'"${LATEST_VERSION}"'") | .id')
+  ## If there is already same name of the release, delete it.
+  if [[ "${_release_id}" != "" ]]; then
+    delete_release "${_release_id}" || exit 1
+    git push origin :"${LATEST_VERSION}"  || true
+    git tag -d "${LATEST_VERSION}" || true
+  fi
+
+  ## Push changes
+  git push origin "${TARGET_BRANCH}"
+}
+
+get_upload_url () {
+  local _tag="$1" ;shift
+  local _release_info
+  _release_info="$(curl "${COMMON_HEADER[@]}" -X GET "${RELEASE_API_URL}")"
+  echo "${_release_info}" | jq ".[] | select (.tag_name==\"${_tag}\")" | jq -r .upload_url | perl -pe 's/{.*}//'
+}
+
 main () {
   local _cmd
   _cmd="${1-}"
   shift || true
   case "$_cmd" in
     init)
-      init
+      init_ssh
       ;;
     bump)
       get_version
-      bump
+      release_check
+      bump_version
+      create_release "${LATEST_VERSION}" "${TARGET_BRANCH}"
+      ;;
+    upload-tarball)
+      get_version
+      build_tarball "${RELEASE_ARCHIVE}.tar.gz"
+      upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.tar.gz"
+      ;;
+    upload-rpm)
+      get_version
+      build_rpm "${RELEASE_ARCHIVE}.rpm" "${LATEST_VERSION}"
+      upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.rpm"
       ;;
     *)
       exit 1
