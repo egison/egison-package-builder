@@ -5,7 +5,7 @@ readonly REPODIR="${HOME}/egison"
 
 {
   git clone https://github.com/egison/egison.git "${REPODIR}"
-  LATEST_TAG=$(git describe --abbrev=0 --tags)
+  LATEST_TAG=$(cd "${REPODIR}" && git describe --abbrev=0 --tags)
   cd "${REPODIR}"
   cabal update
   cabal install --only-dependencies
