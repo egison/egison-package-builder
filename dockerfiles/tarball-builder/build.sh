@@ -20,6 +20,6 @@ readonly REPODIR="${HOME}/egison"
   cp "${REPODIR}/README.md" "${BUILDROOT}/README.md"
   cp "${REPODIR}/THANKS.md" "${BUILDROOT}/THANKS.md"
   cd "${WORKDIR}"
-  tar -zcvf "${REPODIR}.tar.gz" "${BUILDROOT}"
+  tar -zcvf "${REPODIR}.tar.gz" -C "${WORKDIR}" "egison-${LATEST_TAG}"
 } >&2
 cat "${HOME}/egison.tar.gz"
