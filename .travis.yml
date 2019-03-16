@@ -16,6 +16,6 @@ install:
 
 script:
     - bash -x release.sh init
-      # - travis_wait 20 bash -x release.sh bump
-      # - travis_wait 40 bash -x release.sh upload-tarball
+    - travis_wait 20 bash -x release.sh bump
+    - travis_wait 40 bash -x release.sh upload-tarball
     - travis_wait 20 bash -x release.sh upload-rpm
