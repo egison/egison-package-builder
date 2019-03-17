@@ -107,7 +107,7 @@ build_rpm () {
   local _tarfile="$1" ;shift
   local _file="$1" ;shift
   local _ver="$1"
-  docker run -i greymd/egison-rpm-builder bash /tmp/build.sh "${_ver}" > "${_file}"  < cat "${_tarfile}"
+  docker run -i greymd/egison-rpm-builder bash /tmp/build.sh "${_ver}" > "${_file}"  < "${_tarfile}"
   file "${_file}"
   ## Result is like : "file.rpm: RPM v3.0 bin i386/x86_64 file-1.2.3"
   file "${_file}" | grep 'RPM'
@@ -122,7 +122,7 @@ build_deb () {
   local _tarfile="$1" ;shift
   local _file="$1" ;shift
   local _ver="$1"
-  docker run -i greymd/egison-deb-builder bash /tmp/build.sh "${_ver}" > "${_file}" < cat "${_tarfile}"
+  docker run -i greymd/egison-deb-builder bash /tmp/build.sh "${_ver}" > "${_file}" < "${_tarfile}"
   file "${_file}"
   ## Result is like : "file.deb: Debian binary package (format 2.0)"
   file "${_file}" | grep 'Debian'
