@@ -209,9 +209,9 @@ get_upload_url () {
 }
 
 main () {
-  local _cmd="$1" ;shift
-  local _package_builder_repo="$1" ;shift
-  local _build_target_repo="$1" ;shift
+  local _cmd="$1"
+  local _package_builder_repo="$2"
+  local _build_target_repo="$3"
   case "$_cmd" in
     init)
       init_ssh
@@ -224,22 +224,25 @@ main () {
       create_release "$_package_builder_repo" "${LATEST_VERSION}" "${TARGET_BRANCH}"
       ;;
     upload-tarball)
+      _upload_target_repo="$4"
       set_configures "$_package_builder_repo" "$_build_target_repo"
       is_uploaded "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.tar.gz")"
       build_tarball "${RELEASE_ARCHIVE}.tar.gz" "${LATEST_VERSION}"
-      upload_assets "${_package_builder_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.tar.gz"
+      upload_assets "${_upload_target_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.tar.gz"
       ;;
     upload-rpm)
+      _upload_target_repo="$4"
       set_configures "$_package_builder_repo" "$_build_target_repo"
       is_uploaded "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")"
       build_rpm "${RELEASE_ARCHIVE}.tar.gz" "${RELEASE_ARCHIVE}.rpm" "${LATEST_VERSION}"
-      upload_assets "${_package_builder_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.rpm"
+      upload_assets "${_upload_target_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.rpm"
       ;;
     upload-deb)
+      _upload_target_repo="$4"
       set_configures "$_package_builder_repo" "$_build_target_repo"
       is_uploaded "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")"
       build_deb "${RELEASE_ARCHIVE}.tar.gz" "${RELEASE_ARCHIVE}.deb" "${LATEST_VERSION}"
-      upload_assets "${_package_builder_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.deb"
+      upload_assets "${_upload_target_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.deb"
       ;;
     *)
       exit 1
