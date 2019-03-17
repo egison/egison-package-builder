@@ -34,3 +34,30 @@ $ cat egison.tar.gz | docker run -i egison-deb-builder bash /tmp/build.sh <VERSI
 ```
 $ cat egison.tar.gz | docker run -i egison-rpm-builder bash /tmp/build.sh <VERSION> > egison.rpm
 ```
+
+## How to install
+
+### `yum`
+
+```
+$ sudo yum install https://.../egison-3.7.14.x86_64.deb
+```
+
+#### Uninstall
+
+```
+$ sudo yum remove egison
+```
+
+### `apt`
+
+```
+$ wget https://.../egison-3.7.14.x86_64.deb
+$ sudo apt install ./egison-3.7.14.x86_64.deb
+```
+
+#### Uninstall
+
+```
+$ sudo apt remove egison
+```
