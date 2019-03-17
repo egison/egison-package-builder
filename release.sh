@@ -107,7 +107,8 @@ build_rpm () {
   local _ver="$1"
   docker run greymd/egison-rpm-builder bash /tmp/build.sh "${_ver}" > "${_file}"
   file "${_file}"
-  file "${_file}" | grep 'rpm'
+  ## Result is like : "file.rpm: RPM v3.0 bin i386/x86_64 file-1.2.3"
+  file "${_file}" | grep 'RPM'
   echo "${_file} is successfully created." >&2
   if [[ ! -s "${_file}" ]];then
     echo "Failed to create '${_file}'"
@@ -120,7 +121,8 @@ build_deb () {
   local _ver="$1"
   docker run greymd/egison-deb-builder bash /tmp/build.sh "${_ver}" > "${_file}"
   file "${_file}"
-  file "${_file}" | grep 'rpm'
+  ## Result is like : "file.deb: Debian binary package (format 2.0)"
+  file "${_file}" | grep 'Debian'
   echo "${_file} is successfully created." >&2
   if [[ ! -s "${_file}" ]];then
     echo "Failed to create '${_file}'"
@@ -166,7 +168,7 @@ is_uploaded() {
   local _ver="$1" ;shift
   local _fname="$1"
   local _result=
-  _result="$(curl "${COMMON_HEADER[@]}" -X GET "${RELEASE_API_URL}" \
+  _result="$(get_release_list \
     | jq ".[] | select (.tag_name==\"${_ver}\")" \
     | jq -r '.assets[] | .name' )"
   set +e
@@ -182,7 +184,7 @@ is_uploaded() {
 get_upload_url () {
   local _tag="$1" ;shift
   local _release_info
-  _release_info="$(curl "${COMMON_HEADER[@]}" -X GET "${RELEASE_API_URL}")"
+  _release_info="$(get_release_list)"
   echo "${_release_info}" | jq ".[] | select (.tag_name==\"${_tag}\")" | jq -r .upload_url | perl -pe 's/{.*}//'
 }
 
@@ -202,20 +204,20 @@ main () {
       ;;
     upload-tarball)
       get_version
-      build_tarball "${RELEASE_ARCHIVE}.tar.gz"
       is_uploaded "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.tar.gz")"
+      build_tarball "${RELEASE_ARCHIVE}.tar.gz"
       upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.tar.gz"
       ;;
     upload-rpm)
       get_version
-      build_rpm "${RELEASE_ARCHIVE}.rpm" "${LATEST_VERSION}"
       is_uploaded "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")"
+      build_rpm "${RELEASE_ARCHIVE}.rpm" "${LATEST_VERSION}"
       upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.rpm"
       ;;
     upload-deb)
       get_version
-      build_deb "${RELEASE_ARCHIVE}.deb" "${LATEST_VERSION}"
       is_uploaded "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")"
+      build_deb "${RELEASE_ARCHIVE}.deb" "${LATEST_VERSION}"
       upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.deb"
       ;;
     *)
