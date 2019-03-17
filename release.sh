@@ -11,7 +11,6 @@
 # ===================================
 set -xue
 
-readonly FNAME=$(echo "egison_$(uname)_$(uname -m)" | tr '[:upper:]' '[:lower:]' | tr -dc 'a-z0-9._')
 readonly THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 LATEST_VERSION=
 CURRENT_VERSION=
@@ -36,7 +35,8 @@ init_ssh () {
 get_version () {
   LATEST_VERSION=$(get_latest_release "${BUILD_REPO}")
   CURRENT_VERSION=$(get_latest_release "${BUILDER_REPO}")
-  RELEASE_ARCHIVE="${TRAVIS_BUILD_DIR:-$THIS_DIR}/${FNAME}_${LATEST_VERSION}"
+  readonly FNAME="egison-${LATEST_VERSION}.$(uname -m)"
+  RELEASE_ARCHIVE="${TRAVIS_BUILD_DIR:-$THIS_DIR}/${FNAME}"
   readonly LATEST_VERSION CURRENT_VERSION RELEASE_ARCHIVE
 }
 

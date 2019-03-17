@@ -2,13 +2,13 @@
 set -eu
 VERSION="$1"
 REPO="greymd/rpm-egison"
+DOWNLOAD_SOURCE="https://github.com/${REPO}/releases/download/${VERSION}/egison-${VERSION}.$(uname -m).tar.gz"
 {
   cd /tmp
   (
     mkdir /tmp/extract
     cd /tmp/extract
-    wget "https://github.com/${REPO}/releases/download/${VERSION}/egison_linux_$(uname -m)_${VERSION}.tar.gz"
-    tar zxvf "egison_linux_$(uname -m)_${VERSION}.tar.gz"
+    curl "$DOWNLOAD_SOURCE" | tar zxv
   )
   cp -rf "/tmp/extract/egison-${VERSION}"/{bin,lib} /tmp/deb-template/
   rm -rf "/tmp/extract"
