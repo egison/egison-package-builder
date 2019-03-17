@@ -129,6 +129,7 @@ build_deb () {
     exit 1
   fi
 }
+
 release_check () {
   if [[ "${CURRENT_VERSION}" == "${LATEST_VERSION}" ]];then
     echo "Skip git push. It is latest version." >&2
