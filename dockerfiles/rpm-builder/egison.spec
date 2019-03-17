@@ -6,7 +6,7 @@ License:    MIT
 Release:    %(date '+%'s)
 BuildArch:  %(uname -m)
 URL:        https://egison.org
-Source:     https://github.com/greymd/rpm-egison/releases/download/%{version}/egison-%{version}.%{buildarch}.tar.gz
+Source:     https://github.com/greymd/egison-package-builder/releases/download/%{version}/egison-%{version}.%{buildarch}.tar.gz
 Vendor:     Egi, Satoshi <egison at egison dot org>
 Provides:   egison
 

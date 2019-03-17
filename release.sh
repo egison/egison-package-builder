@@ -16,7 +16,7 @@ LATEST_VERSION=
 CURRENT_VERSION=
 RELEASE_ARCHIVE=
 readonly TARGET_BRANCH="master"
-readonly BUILDER_REPO="greymd/rpm-egison"
+readonly BUILDER_REPO="greymd/egison-package-builder"
 readonly BUILDER_REPO_NAME=${BUILDER_REPO##*/}
 readonly BUILD_REPO="egison/egison"
 ## User-Agent starts with Travis is required (https://github.com/travis-ci/travis-ci/issues/5649)
@@ -90,8 +90,9 @@ get_latest_release () {
 }
 
 build_tarball () {
-  local _file="$1"
-  docker run greymd/egison-tarball-builder bash /tmp/build.sh > "${_file}"
+  local _file="$1" ;shift
+  local _ver="$1"
+  docker run greymd/egison-tarball-builder bash /tmp/build.sh "${_ver}" > "${_file}"
   file "${_file}"
   {
     file "${_file}" | grep 'gzip compressed'
@@ -206,7 +207,7 @@ main () {
     upload-tarball)
       get_version
       is_uploaded "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.tar.gz")"
-      build_tarball "${RELEASE_ARCHIVE}.tar.gz"
+      build_tarball "${RELEASE_ARCHIVE}.tar.gz" "${LATEST_VERSION}"
       upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.tar.gz"
       ;;
     upload-rpm)
