@@ -12,16 +12,13 @@
 set -xue
 
 readonly THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DOCKERHUB_ACCOUNT="greymd"
 LATEST_VERSION=
 CURRENT_VERSION=
 RELEASE_ARCHIVE=
 readonly TARGET_BRANCH="master"
-readonly BUILDER_REPO="greymd/egison-package-builder"
-readonly BUILDER_REPO_NAME=${BUILDER_REPO##*/}
-readonly BUILD_REPO="egison/egison"
 ## User-Agent starts with Travis is required (https://github.com/travis-ci/travis-ci/issues/5649)
 readonly COMMON_HEADER=("-H" "User-Agent: Travis/1.0" "-H" "Authorization: token $GITHUB_AUTH" "-H" "Accept: application/vnd.github.v3+json" "-L" "-f")
-readonly RELEASE_API_URL="https://api.github.com/repos/${BUILDER_REPO}/releases"
 
 # Initialize SSH keys
 init_ssh () {
@@ -32,27 +29,35 @@ init_ssh () {
   git config --global user.email "greengregson@gmail.com"
 }
 
-get_version () {
-  LATEST_VERSION=$(get_latest_release "${BUILD_REPO}")
-  CURRENT_VERSION=$(get_latest_release "${BUILDER_REPO}")
+set_configures () {
+  local _package_builder_repo="$1" ;shift
+  local _build_target_repo="$1" ;shift
+  LATEST_VERSION=$(get_latest_release "${_build_target_repo}")
+  CURRENT_VERSION=$(get_latest_release "${_package_builder_repo}")
   readonly FNAME="egison-${LATEST_VERSION}.$(uname -m)"
   RELEASE_ARCHIVE="${TRAVIS_BUILD_DIR:-$THIS_DIR}/${FNAME}"
   readonly LATEST_VERSION CURRENT_VERSION RELEASE_ARCHIVE
 }
 
 get_release_list () {
-  curl "${COMMON_HEADER[@]}" "${RELEASE_API_URL}"
+  local _repo="$1"
+  local _api_url="https://api.github.com/repos/${_repo}/releases"
+  curl "${COMMON_HEADER[@]}" "${_api_url}"
 }
 
 delete_release () {
-  local _id="$1"
+  local _package_builder_repo="$1" ;shift
+  local _id="$1" ;shift
+  local _api_url="https://api.github.com/repos/${_package_builder_repo}/releases"
   curl "${COMMON_HEADER[@]}" \
-  -X DELETE "${RELEASE_API_URL}/${_id}"
+  -X DELETE "${_api_url}/${_id}"
 }
 
 create_release () {
+  local _package_builder_repo="$1" ;shift
   local _tag="$1" ;shift
   local _branch="$1" ;shift
+  local _api_url="https://api.github.com/repos/${_package_builder_repo}/releases"
   curl "${COMMON_HEADER[@]}" \
     -X POST \
     -d '{
@@ -63,14 +68,15 @@ create_release () {
       "draft": false,
       "prerelease": false
     }' \
-  "${RELEASE_API_URL}"
+  "${_api_url}"
 }
 
 upload_assets () {
+  local _repo="$1" ;shift
   local _tag="$1"; shift
   local _file="$1"; shift
-  local _url
-  _url="$(get_upload_url "${_tag}")"
+  local _url=
+  _url="$(get_upload_url "${_repo}" "${_tag}")"
   curl "${COMMON_HEADER[@]}" \
     -H "Content-Type: $(file -b --mime-type "${_file}")" \
     --data-binary @"${_file}" \
@@ -92,7 +98,7 @@ get_latest_release () {
 build_tarball () {
   local _file="$1" ;shift
   local _ver="$1"
-  docker run greymd/egison-tarball-builder bash /tmp/build.sh "${_ver}" > "${_file}"
+  docker run "${DOCKERHUB_ACCOUNT}"/egison-tarball-builder bash /tmp/build.sh "${_ver}" > "${_file}"
   file "${_file}"
   {
     file "${_file}" | grep 'gzip compressed'
@@ -110,7 +116,7 @@ build_rpm () {
   if [[ ! -e "${_tarfile}" ]];then
     build_tarball "${_tarfile}" "${_ver}"
   fi
-  docker run -i greymd/egison-rpm-builder bash /tmp/build.sh "${_ver}" > "${_file}"  < "${_tarfile}"
+  docker run -i "${DOCKERHUB_ACCOUNT}"/egison-rpm-builder bash /tmp/build.sh "${_ver}" > "${_file}"  < "${_tarfile}"
   file "${_file}"
   ## Result is like : "file.rpm: RPM v3.0 bin i386/x86_64 file-1.2.3"
   file "${_file}" | grep 'RPM'
@@ -128,7 +134,7 @@ build_deb () {
   if [[ ! -e "${_tarfile}" ]];then
     build_tarball "${_tarfile}" "${_ver}"
   fi
-  docker run -i greymd/egison-deb-builder bash /tmp/build.sh "${_ver}" > "${_file}" < "${_tarfile}"
+  docker run -i "${DOCKERHUB_ACCOUNT}"/egison-deb-builder bash /tmp/build.sh "${_ver}" > "${_file}" < "${_tarfile}"
   file "${_file}"
   ## Result is like : "file.deb: Debian binary package (format 2.0)"
   file "${_file}" | grep 'Debian'
@@ -147,13 +153,15 @@ release_check () {
 }
 
 bump_version () {
+  local _package_builder_repo="$1" ;shift
   local _release_id
+  local _repo_name=${_package_builder_repo##*/}
 
   git clone -b "${TARGET_BRANCH}" \
-    "git@github.com:${BUILDER_REPO}.git" \
-    "${THIS_DIR}/${BUILDER_REPO_NAME}"
+    "git@github.com:${_package_builder_repo}.git" \
+    "${THIS_DIR}/${_repo_name}"
 
-  cd "${THIS_DIR}/${BUILDER_REPO_NAME}"
+  cd "${THIS_DIR}/${_repo_name}"
 
   echo "${LATEST_VERSION}-$(date +%s)" > "./VERSION"
 
@@ -162,10 +170,10 @@ bump_version () {
   git commit -m "[skip ci] Bump version to ${LATEST_VERSION}"
 
   ## Clean tags just in case
-  _release_id=$(get_release_list | jq '.[] | select(.tag_name == "'"${LATEST_VERSION}"'") | .id')
+  _release_id=$(get_release_list "${_package_builder_repo}" | jq '.[] | select(.tag_name == "'"${LATEST_VERSION}"'") | .id')
   ## If there is already same name of the release, delete it.
   if [[ "${_release_id}" != "" ]]; then
-    delete_release "${_release_id}" || exit 1
+    delete_release "${_package_builder_repo}" "${_release_id}" || exit 1
     git push origin :"${LATEST_VERSION}"  || true
     git tag -d "${LATEST_VERSION}" || true
   fi
@@ -175,10 +183,11 @@ bump_version () {
 }
 
 is_uploaded() {
+  local _repo="$1" ;shift
   local _ver="$1" ;shift
-  local _fname="$1"
+  local _fname="$1" ;shift
   local _result=
-  _result="$(get_release_list \
+  _result="$(get_release_list "${_repo}" \
     | jq ".[] | select (.tag_name==\"${_ver}\")" \
     | jq -r '.assets[] | .name' )"
   set +e
@@ -192,43 +201,45 @@ is_uploaded() {
 }
 
 get_upload_url () {
+  local _repo="$1" ;shift
   local _tag="$1" ;shift
   local _release_info
-  _release_info="$(get_release_list)"
+  _release_info="$(get_release_list "${_repo}")"
   echo "${_release_info}" | jq ".[] | select (.tag_name==\"${_tag}\")" | jq -r .upload_url | perl -pe 's/{.*}//'
 }
 
 main () {
-  local _cmd
-  _cmd="${1-}"
-  shift || true
+  local _cmd="$1" ;shift
+  local _package_builder_repo="$1" ;shift
+  local _build_target_repo="$1" ;shift
   case "$_cmd" in
     init)
       init_ssh
       ;;
     bump)
-      get_version
+      # set variables LATEST_VERSION CURRENT_VERSION RELEASE_ARCHIVE
+      set_configures "$_package_builder_repo" "$_build_target_repo"
       release_check
-      bump_version
-      create_release "${LATEST_VERSION}" "${TARGET_BRANCH}"
+      bump_version "$_package_builder_repo" ## IT MIGHT BE DESTRUCTIVE!! TAKE CARE THE REPOSITORY NAME!!
+      create_release "$_package_builder_repo" "${LATEST_VERSION}" "${TARGET_BRANCH}"
       ;;
     upload-tarball)
-      get_version
-      is_uploaded "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.tar.gz")"
+      set_configures "$_package_builder_repo" "$_build_target_repo"
+      is_uploaded "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.tar.gz")"
       build_tarball "${RELEASE_ARCHIVE}.tar.gz" "${LATEST_VERSION}"
-      upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.tar.gz"
+      upload_assets "${_package_builder_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.tar.gz"
       ;;
     upload-rpm)
-      get_version
-      is_uploaded "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")"
+      set_configures "$_package_builder_repo" "$_build_target_repo"
+      is_uploaded "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")"
       build_rpm "${RELEASE_ARCHIVE}.tar.gz" "${RELEASE_ARCHIVE}.rpm" "${LATEST_VERSION}"
-      upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.rpm"
+      upload_assets "${_package_builder_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.rpm"
       ;;
     upload-deb)
-      get_version
-      is_uploaded "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")"
+      set_configures "$_package_builder_repo" "$_build_target_repo"
+      is_uploaded "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")"
       build_deb "${RELEASE_ARCHIVE}.tar.gz" "${RELEASE_ARCHIVE}.deb" "${LATEST_VERSION}"
-      upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.deb"
+      upload_assets "${_package_builder_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.deb"
       ;;
     *)
       exit 1

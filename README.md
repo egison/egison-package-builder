@@ -17,30 +17,46 @@ It calls following docker containers.
 
 ## Docker containers
 
-* egison-tarball-builder
+### `egison-tarball-builder`
+
+* Build Context: `dockerfiles/tarball-builder/`
+* Dockerfile location: `Dockerfile`
+* Description
+Build executable binary from egison/egison GitHub repository
 
 ```
-$ docker run egison-tarball-builder bash /tmp/build.sh <VERSION> > egison.tar.gz
+$ docker run <username>/egison-tarball-builder bash /tmp/build.sh <VERSION> > egison.tar.gz
 ```
 
-* egison-deb-builder
+### `egison-deb-builder`
+
+* Build Context: `dockerfiles/deb-builder/`
+* Dockerfile location: `Dockerfile`
+* Description
+Convert tarball to Debian package (deb)
 
 ```
-$ cat egison.tar.gz | docker run -i egison-deb-builder bash /tmp/build.sh <VERSION> > egison.deb
+$ cat egison.tar.gz | docker run -i <username>/egison-deb-builder bash /tmp/build.sh <VERSION> > egison.deb
 ```
 
-* egison-rpm-builder
+### `egison-rpm-builder`
+
+* Build Context: `dockerfiles/rpm-builder/`
+* Dockerfile location: `Dockerfile`
+* Description
+Convert tarball to RPM file.
 
 ```
-$ cat egison.tar.gz | docker run -i egison-rpm-builder bash /tmp/build.sh <VERSION> > egison.rpm
+$ cat egison.tar.gz | docker run -i <username>/egison-rpm-builder bash /tmp/build.sh <VERSION> > egison.rpm
 ```
 
-## How to install
+
+## How to install packages
 
 ### `yum`
 
 ```
-$ sudo yum install https://.../egison-3.7.14.x86_64.deb
+$ sudo yum install https://.../egison-3.7.14.x86_64.rpm
 ```
 
 #### Uninstall
