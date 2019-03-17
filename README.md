@@ -26,15 +26,11 @@ $ docker run egison-tarball-builder bash /tmp/build.sh <VERSION> > egison.tar.gz
 * egison-deb-builder
 
 ```
-$ docker run egison-tarball-builder bash /tmp/build.sh <VERSION> > egison.deb
+$ cat egison.tar.gz | docker run -i egison-deb-builder bash /tmp/build.sh <VERSION> > egison.deb
 ```
-
-tarball must be uploaded in advance.
 
 * egison-rpm-builder
 
 ```
-$ docker run egison-tarball-builder bash /tmp/build.sh <VERSION> > egison.rpm
+$ cat egison.tar.gz | docker run -i egison-rpm-builder bash /tmp/build.sh <VERSION> > egison.rpm
 ```
-
-tarball must be uploaded in advance.

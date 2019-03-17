@@ -104,9 +104,10 @@ build_tarball () {
 }
 
 build_rpm () {
+  local _tarfile="$1" ;shift
   local _file="$1" ;shift
   local _ver="$1"
-  docker run greymd/egison-rpm-builder bash /tmp/build.sh "${_ver}" > "${_file}"
+  docker run -i greymd/egison-rpm-builder bash /tmp/build.sh "${_ver}" > "${_file}"  < cat "${_tarfile}"
   file "${_file}"
   ## Result is like : "file.rpm: RPM v3.0 bin i386/x86_64 file-1.2.3"
   file "${_file}" | grep 'RPM'
@@ -118,9 +119,10 @@ build_rpm () {
 }
 
 build_deb () {
+  local _tarfile="$1" ;shift
   local _file="$1" ;shift
   local _ver="$1"
-  docker run greymd/egison-deb-builder bash /tmp/build.sh "${_ver}" > "${_file}"
+  docker run -i greymd/egison-deb-builder bash /tmp/build.sh "${_ver}" > "${_file}" < cat "${_tarfile}"
   file "${_file}"
   ## Result is like : "file.deb: Debian binary package (format 2.0)"
   file "${_file}" | grep 'Debian'
@@ -213,13 +215,13 @@ main () {
     upload-rpm)
       get_version
       is_uploaded "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")"
-      build_rpm "${RELEASE_ARCHIVE}.rpm" "${LATEST_VERSION}"
+      build_rpm "${RELEASE_ARCHIVE}.tar.gz" "${RELEASE_ARCHIVE}.rpm" "${LATEST_VERSION}"
       upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.rpm"
       ;;
     upload-deb)
       get_version
       is_uploaded "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")"
-      build_deb "${RELEASE_ARCHIVE}.deb" "${LATEST_VERSION}"
+      build_deb "${RELEASE_ARCHIVE}.tar.gz" "${RELEASE_ARCHIVE}.deb" "${LATEST_VERSION}"
       upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.deb"
       ;;
     *)

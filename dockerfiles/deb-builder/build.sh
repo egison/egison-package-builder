@@ -1,14 +1,12 @@
 #!/bin/bash
 set -eu
 VERSION="$1"
-REPO="greymd/egison-package-builder"
-DOWNLOAD_SOURCE="https://github.com/${REPO}/releases/download/${VERSION}/egison-${VERSION}.$(uname -m).tar.gz"
 {
   cd /tmp
   (
     mkdir /tmp/extract
     cd /tmp/extract
-    curl -so- -L "$DOWNLOAD_SOURCE" | tar zxv
+    cat | tar zxv
   )
   cp -rf "/tmp/extract/egison-${VERSION}"/{bin,lib} /tmp/deb-template/
   rm -rf "/tmp/extract"
