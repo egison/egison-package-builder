@@ -18,7 +18,7 @@ script:
     - BUILDER="greymd/egison-package-builder"
     - TARGET="greymd/egison"
     - bash -x release.sh init
-    - travis_wait 20 bash -x release.sh bump "$BUILDER"
+    - travis_wait 20 bash -x release.sh bump "$BUILDER" "$TARGET"
     - travis_wait 40 bash -x release.sh upload-tarball "$BUILDER" "$TARGET" "$BUILDER"
     - travis_wait 20 bash -x release.sh upload-rpm "$BUILDER" "$TARGET" "$BUILDER"
     - travis_wait 20 bash -x release.sh upload-deb "$BUILDER" "$TARGET" "$BUILDER"
