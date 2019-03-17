@@ -6,6 +6,7 @@ services:
 matrix:
     include:
         - os: linux
+          env: BUILDER=greymd/egison-package-builder TARGET=greymd/egison
 
 before_install:
     - sudo apt update
@@ -15,8 +16,6 @@ install:
     - true
 
 script:
-    - BUILDER="greymd/egison-package-builder"
-    - TARGET="greymd/egison"
     - bash -x release.sh init
     - travis_wait 20 bash -x release.sh bump "$BUILDER" "$TARGET"
     - travis_wait 40 bash -x release.sh upload-tarball "$BUILDER" "$TARGET" "$BUILDER"
