@@ -1,6 +1,6 @@
 Source: egison
 Version: @@@VERSION@@@
-Section: utils
+Section: interpreters
 Priority: optional
 Maintainer: Satoshi, Egi <egison@egison.org>
 Build-Depends: debhelper (>=9)
