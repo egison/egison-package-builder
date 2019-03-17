@@ -167,7 +167,7 @@ is_uploaded() {
   local _fname="$1"
   local _result=
   _result="$(curl "${COMMON_HEADER[@]}" -X GET "${RELEASE_API_URL}" \
-    | jq ".[] | select (.tag_name==\"${_tag}\")" \
+    | jq ".[] | select (.tag_name==\"${_ver}\")" \
     | jq -r '.assets[] | .name' )"
   set +e
   if grep "${_fname}" <<<"$_result" ;then
@@ -203,19 +203,19 @@ main () {
     upload-tarball)
       get_version
       build_tarball "${RELEASE_ARCHIVE}.tar.gz"
-      is_uploaded "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.tar.gz"
+      is_uploaded "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.tar.gz")"
       upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.tar.gz"
       ;;
     upload-rpm)
       get_version
       build_rpm "${RELEASE_ARCHIVE}.rpm" "${LATEST_VERSION}"
-      is_uploaded "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.rpm"
+      is_uploaded "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")"
       upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.rpm"
       ;;
     upload-deb)
       get_version
       build_deb "${RELEASE_ARCHIVE}.deb" "${LATEST_VERSION}"
-      is_uploaded "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.deb"
+      is_uploaded "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")"
       upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.deb"
       ;;
     *)
