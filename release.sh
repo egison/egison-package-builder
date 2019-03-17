@@ -115,6 +115,18 @@ build_rpm () {
   fi
 }
 
+build_deb () {
+  local _file="$1" ;shift
+  local _ver="$1"
+  docker run greymd/egison-deb-builder bash /tmp/build.sh "${_ver}" > "${_file}"
+  file "${_file}"
+  file "${_file}" | grep 'rpm'
+  echo "${_file} is successfully created." >&2
+  if [[ ! -s "${_file}" ]];then
+    echo "Failed to create '${_file}'"
+    exit 1
+  fi
+}
 release_check () {
   if [[ "${CURRENT_VERSION}" == "${LATEST_VERSION}" ]];then
     echo "Skip git push. It is latest version." >&2
@@ -150,6 +162,23 @@ bump_version () {
   git push origin "${TARGET_BRANCH}"
 }
 
+is_uploaded() {
+  local _ver="$1" ;shift
+  local _fname="$1"
+  local _result=
+  _result="$(curl "${COMMON_HEADER[@]}" -X GET "${RELEASE_API_URL}" \
+    | jq ".[] | select (.tag_name==\"${_tag}\")" \
+    | jq -r '.assets[] | .name' )"
+  set +e
+  if grep "${_fname}" <<<"$_result" ;then
+    echo "$_fname is ALREADY uploaded" >&2
+    exit 0
+  else
+    echo "$_fname is NOT uploaded yet" >&2
+  fi
+  set -e
+}
+
 get_upload_url () {
   local _tag="$1" ;shift
   local _release_info
@@ -174,12 +203,20 @@ main () {
     upload-tarball)
       get_version
       build_tarball "${RELEASE_ARCHIVE}.tar.gz"
+      is_uploaded "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.tar.gz"
       upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.tar.gz"
       ;;
     upload-rpm)
       get_version
       build_rpm "${RELEASE_ARCHIVE}.rpm" "${LATEST_VERSION}"
+      is_uploaded "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.rpm"
       upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.rpm"
+      ;;
+    upload-deb)
+      get_version
+      build_deb "${RELEASE_ARCHIVE}.deb" "${LATEST_VERSION}"
+      is_uploaded "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.deb"
+      upload_assets "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.deb"
       ;;
     *)
       exit 1
