@@ -10,7 +10,7 @@ matrix:
 
 before_install:
     - sudo apt update
-    - sudo apt install jq
+    - sudo apt install -y jq
 
 install:
     - true

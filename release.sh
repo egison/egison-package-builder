@@ -238,7 +238,7 @@ main () {
       _build_target_repo="$3"
       _upload_target_repo="$4"
       set_configures "$_package_builder_repo" "$_build_target_repo"
-      is_uploaded "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")"
+      is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")"
       build_rpm "${RELEASE_ARCHIVE}.tar.gz" "${RELEASE_ARCHIVE}.rpm" "${LATEST_VERSION}"
       upload_assets "${_upload_target_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.rpm"
       ;;
@@ -247,7 +247,7 @@ main () {
       _build_target_repo="$3"
       _upload_target_repo="$4"
       set_configures "$_package_builder_repo" "$_build_target_repo"
-      is_uploaded "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")"
+      is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")"
       build_deb "${RELEASE_ARCHIVE}.tar.gz" "${RELEASE_ARCHIVE}.deb" "${LATEST_VERSION}"
       upload_assets "${_upload_target_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.deb"
       ;;
