@@ -18,7 +18,7 @@ CURRENT_VERSION=
 RELEASE_ARCHIVE=
 readonly TARGET_BRANCH="master"
 ## User-Agent starts with Travis is required (https://github.com/travis-ci/travis-ci/issues/5649)
-readonly COMMON_HEADER=("-H" "User-Agent: Travis/1.0" "-H" "Authorization: token $GITHUB_AUTH" "-H" "Accept: application/vnd.github.v3+json" "-L" "-f")
+readonly COMMON_HEADER=("--retry" "5" "-H" "User-Agent: Travis/1.0" "-H" "Authorization: token $GITHUB_AUTH" "-H" "Accept: application/vnd.github.v3+json" "-L" "-f")
 
 # Initialize SSH keys
 init_ssh () {
