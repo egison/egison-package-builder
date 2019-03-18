@@ -10,6 +10,10 @@ Following files are generated.
 This script builds & upload packages if the latest version of Egison have not been built yet.
 It runs everyday.
 
+## Supported version
+* Tested kernel: kernel 2.6.32 or later.
+* CentOS 5 is out of support. The kernel is too old (2.6.18).
+
 ## Script
 
 `release.sh` is the script to build & upload the packages.
