@@ -56,7 +56,7 @@ $ cat egison.tar.gz | docker run -i <username>/egison-rpm-builder bash /tmp/buil
 ### `yum`
 
 ```
-$ sudo yum install https://.../egison-3.7.14.x86_64.rpm
+$ sudo yum install https://github.com/egison/egison-package-builder/releases/download/3.7.14/egison-3.7.14.x86_64.rpm
 ```
 
 #### Uninstall
@@ -68,7 +68,7 @@ $ sudo yum remove egison
 ### `apt`
 
 ```
-$ wget https://.../egison-3.7.14.x86_64.deb
+$ wget https://github.com/egison/egison-package-builder/releases/download/3.7.14/egison-3.7.14.x86_64.deb
 $ sudo apt install ./egison-3.7.14.x86_64.deb
 ```
 
