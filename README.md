@@ -3,7 +3,7 @@
 Build executable binary file for Egison.
 Following files are generated.
 
-* tarball
+* tarball (for x86_64)
 * deb file (for Debian base distros)
 * RPM file (for Fedora, CentOS, RHEL, Amazon Linux and etc)
 
@@ -21,7 +21,7 @@ It calls following docker containers.
 
 * Build Context: `dockerfiles/tarball-builder/`
 * Dockerfile location: `Dockerfile`
-* Description
+* Description:
 Build executable binary from egison/egison GitHub repository
 
 ```
@@ -32,7 +32,7 @@ $ docker run <username>/egison-tarball-builder bash /tmp/build.sh <VERSION> > eg
 
 * Build Context: `dockerfiles/deb-builder/`
 * Dockerfile location: `Dockerfile`
-* Description
+* Description:
 Convert tarball to Debian package (deb)
 
 ```
@@ -43,7 +43,7 @@ $ cat egison.tar.gz | docker run -i <username>/egison-deb-builder bash /tmp/buil
 
 * Build Context: `dockerfiles/rpm-builder/`
 * Dockerfile location: `Dockerfile`
-* Description
+* Description:
 Convert tarball to RPM file.
 
 ```

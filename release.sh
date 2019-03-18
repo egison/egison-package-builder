@@ -5,7 +5,7 @@
 # Required Environment Variables:
 #  * TRAVIS_BUILD_DIR -- Given by TravisCI
 #  * ID_RSA           -- Given by TravisCI's settings screen
-#                        FYI: https://travis-ci.org/egison/homebrew-egison/settings
+#                        FYI: https://travis-ci.org/egison/<reponame>/settings
 #  * GITHUB_AUTH      -- Given by TravisCI's settings screen.
 #                        Auth token for GitHub Rest API.
 # ===================================
