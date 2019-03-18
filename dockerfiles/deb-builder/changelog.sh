@@ -3,7 +3,7 @@ set -e
 
 _THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%N}}")"; pwd)"
 _tmpfile="/tmp/latest.json"
-curl -f -so- https://api.github.com/repos/egison/egison/releases/latest > "${_tmpfile}"
+curl --retry 5 -f -so- https://api.github.com/repos/egison/egison/releases/latest > "${_tmpfile}"
 cp "${_THIS_DIR}/deb-template/debian/changelog" /tmp/changelog
 
 _version=$(cat "${_tmpfile}" | jq -r .tag_name | sed 's/^v//')
