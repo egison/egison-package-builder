@@ -5,7 +5,7 @@ readonly REPODIR="${HOME}/egison"
 
 # Make static link for libtinfo to suppress error
 ## Like: https://github.com/smallhadroncollider/taskell/issues/12
-readonly GCC_OPT='-pgml gcc "-optl-Wl,--allow-multiple-definition" "-optl-Wl,--whole-archive" "-optl-Wl,-Bstatic" "-optl-Wl,-ltinfo" "-optl-Wl,-Bdynamic" "-optl-Wl,--no-whole-archive"'
+readonly GCC_OPT='-pgml gcc "-optl-Wl,--allow-multiple-definition" "-optl-Wl,--whole-archive" "-optl-Wl,-Bstatic" "-optl-Wl,-ltinfo" "-optl-Wl,-lgmp" "-optl-Wl,-Bdynamic" "-optl-Wl,--no-whole-archive"'
 {
   git clone -b "${VERSION}" https://github.com/egison/egison.git "${REPODIR}"
   cd "${REPODIR}"
