@@ -1,3 +1,31 @@
+## How to install Egison
+
+### `yum`
+
+```
+$ sudo yum install https://github.com/egison/egison-package-builder/releases/download/3.7.14/egison-3.7.14.x86_64.rpm
+```
+
+#### Uninstall
+
+```
+$ sudo yum remove egison
+```
+
+### `apt` or `dpkg`
+
+```
+$ wget https://github.com/egison/egison-package-builder/releases/download/3.7.14/egison-3.7.14.x86_64.deb
+$ sudo dpkg -i ./egison-3.7.14.x86_64.deb
+( or $ sudo apt install ./egison-3.7.14.x86_64.deb)
+```
+
+#### Uninstall
+
+```
+$ sudo apt remove egison
+```
+
 # egison-package-builder
 
 Build executable binary file for Egison.
@@ -54,30 +82,3 @@ Convert tarball to RPM file.
 $ cat egison.tar.gz | docker run -i <username>/egison-rpm-builder bash /tmp/build.sh <VERSION> > egison.rpm
 ```
 
-
-## How to install packages
-
-### `yum`
-
-```
-$ sudo yum install https://github.com/egison/egison-package-builder/releases/download/3.7.14/egison-3.7.14.x86_64.rpm
-```
-
-#### Uninstall
-
-```
-$ sudo yum remove egison
-```
-
-### `apt`
-
-```
-$ wget https://github.com/egison/egison-package-builder/releases/download/3.7.14/egison-3.7.14.x86_64.deb
-$ sudo apt install ./egison-3.7.14.x86_64.deb
-```
-
-#### Uninstall
-
-```
-$ sudo apt remove egison
-```
