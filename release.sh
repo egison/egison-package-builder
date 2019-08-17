@@ -182,6 +182,27 @@ bump_version () {
   git push origin "${TARGET_BRANCH}"
 }
 
+bump_package () {
+  local _package_builder_repo="$1" ;shift
+  local _release_id
+  local _repo_name=${_package_builder_repo##*/}
+  local _package="$1" ;shift
+
+  git clone -b "${TARGET_BRANCH}" \
+    "git@github.com:${_package_builder_repo}.git" \
+    "${THIS_DIR}/${_repo_name}"
+
+  mkdir "${THIS_DIR}/${_repo_name}/packages"
+  cp "$_package" "${THIS_DIR}/${_repo_name}/packages"
+  cd "${THIS_DIR}/${_repo_name}"
+
+  git add "./packages"
+  git commit -m "[skip ci] Update package ${_package}"
+
+  ## Push changes
+  git push origin "${TARGET_BRANCH}"
+}
+
 is_uploaded() {
   local _repo="$1" ;shift
   local _ver="$1" ;shift
@@ -250,6 +271,18 @@ main () {
       is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")"
       build_deb "${RELEASE_ARCHIVE}.tar.gz" "${RELEASE_ARCHIVE}.deb" "${LATEST_VERSION}"
       upload_assets "${_upload_target_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.deb"
+      ;;
+    upload-packages)
+      _package_builder_repo="$2"
+      _build_target_repo="$3"
+      _upload_target_repo="$4"
+      set_configures "$_package_builder_repo" "$_build_target_repo"
+      is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")"
+      is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")"
+      cp "${RELEASE_ARCHIVE}.deb" "egison-latest.$(uname -m).deb"
+      bump_package "${_package_builder_repo}" "egison-latest.$(uname -m).deb"
+      cp "${RELEASE_ARCHIVE}.rpm" "egison-latest.$(uname -m).rpm"
+      bump_package "${_package_builder_repo}" "egison-latest.$(uname -m).rpm"
       ;;
     *)
       exit 1
