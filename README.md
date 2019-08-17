@@ -3,7 +3,7 @@
 ### `yum`
 
 ```
-$ sudo yum install https://git.io/egison-3.7.14.x86_64.rpm
+$ sudo yum install https://git.io/egison.x86_64.rpm
 ```
 
 #### Uninstall
@@ -15,9 +15,9 @@ $ sudo yum remove egison
 ### `apt` or `dpkg`
 
 ```
-$ wget https://git.io/egison-3.7.14.x86_64.deb
-$ sudo dpkg -i ./egison-*.deb
-( or $ sudo apt install ./egison-*.deb)
+$ wget https://git.io/egison.x86_64.deb
+$ sudo dpkg -i ./egison.x86_64.deb
+( or $ sudo apt install ./egison.x86_64.deb)
 ```
 
 #### Uninstall
