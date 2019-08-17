@@ -21,6 +21,5 @@ script:
     - travis_wait 40 bash -x release.sh upload-tarball "$BUILDER" "$TARGET" "$BUILDER"
     - travis_wait 20 bash -x release.sh upload-rpm "$BUILDER" "$TARGET" "$BUILDER"
     - travis_wait 20 bash -x release.sh upload-deb "$BUILDER" "$TARGET" "$BUILDER"
-## Upload to Egison repository
-    # - travis_wait 20 bash -x release.sh upload-rpm "$BUILDER" "$TARGET" "$TARGET"
-    # - travis_wait 20 bash -x release.sh upload-deb "$BUILDER" "$TARGET" "$TARGET"
+    - travis_wait 20 bash -x release.sh commit-rpm "$BUILDER" "$TARGET" "$BUILDER"
+    - travis_wait 20 bash -x release.sh commit-deb "$BUILDER" "$TARGET" "$BUILDER"

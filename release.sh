@@ -182,6 +182,29 @@ bump_version () {
   git push origin "${TARGET_BRANCH}"
 }
 
+commit_package () {
+  local _package_builder_repo="$1" ;shift
+  local _ver="$1" ;shift
+  local _package="$1" ;shift
+  local _release_id
+  local _repo_name=${_package_builder_repo##*/}
+
+  git clone -b "${TARGET_BRANCH}" \
+    "git@github.com:${_package_builder_repo}.git" \
+    "${THIS_DIR}/${_repo_name}"
+
+  mkdir "${THIS_DIR}/${_repo_name}/packages"
+  cp "$_package" "${THIS_DIR}/${_repo_name}/packages"
+  cd "${THIS_DIR}/${_repo_name}"
+  git add "./packages"
+
+  ## No changes
+  [[ "$(git status --porcelain | grep -c .)" == "0" ]] && return 0
+
+  git commit -m "[skip ci] Update package ${_package} to ${_ver}"
+  git push origin "${TARGET_BRANCH}"
+}
+
 is_uploaded() {
   local _repo="$1" ;shift
   local _ver="$1" ;shift
@@ -193,11 +216,25 @@ is_uploaded() {
   set +e
   if grep "${_fname}" <<<"$_result" ;then
     echo "$_fname is ALREADY uploaded" >&2
-    exit 0
+    return 0
   else
     echo "$_fname is NOT uploaded yet" >&2
+    return 1
   fi
   set -e
+}
+
+download_asset() {
+  local _repo="$1" ;shift
+  local _ver="$1" ;shift
+  local _download_file="$1" ;shift
+  local _saved_file="$1" ;shift
+  local _download_url
+  _download_url="$(get_release_list "${_repo}" \
+    | jq ".[] | select(.tag_name == \"${_ver}\")" \
+    | jq -r ".assets[] | select(.name == \"${_download_file}\") | .browser_download_url")"
+  [[ "$_download_url" =~ ^https.*${_download_file}$ ]] || return 1
+  curl -o "$_saved_file" -L -f --retry 5 "$_download_url"
 }
 
 get_upload_url () {
@@ -229,7 +266,7 @@ main () {
       _build_target_repo="$3"
       _upload_target_repo="$4"
       set_configures "$_package_builder_repo" "$_build_target_repo"
-      is_uploaded "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.tar.gz")"
+      is_uploaded "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.tar.gz")" && exit 0
       build_tarball "${RELEASE_ARCHIVE}.tar.gz" "${LATEST_VERSION}"
       upload_assets "${_upload_target_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.tar.gz"
       ;;
@@ -238,7 +275,7 @@ main () {
       _build_target_repo="$3"
       _upload_target_repo="$4"
       set_configures "$_package_builder_repo" "$_build_target_repo"
-      is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")"
+      is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")" && exit 0
       build_rpm "${RELEASE_ARCHIVE}.tar.gz" "${RELEASE_ARCHIVE}.rpm" "${LATEST_VERSION}"
       upload_assets "${_upload_target_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.rpm"
       ;;
@@ -247,9 +284,27 @@ main () {
       _build_target_repo="$3"
       _upload_target_repo="$4"
       set_configures "$_package_builder_repo" "$_build_target_repo"
-      is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")"
+      is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")" && exit 0
       build_deb "${RELEASE_ARCHIVE}.tar.gz" "${RELEASE_ARCHIVE}.deb" "${LATEST_VERSION}"
       upload_assets "${_upload_target_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.deb"
+      ;;
+    commit-deb)
+      _package_builder_repo="$2"
+      _build_target_repo="$3"
+      _upload_target_repo="$4"
+      set_configures "$_package_builder_repo" "$_build_target_repo"
+      is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")" || exit 1
+      download_asset "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")" "egison.$(uname -m).deb"
+      commit_package "${_upload_target_repo}" "${LATEST_VERSION}" "egison.$(uname -m).deb"
+      ;;
+    commit-rpm)
+      _package_builder_repo="$2"
+      _build_target_repo="$3"
+      _upload_target_repo="$4"
+      set_configures "$_package_builder_repo" "$_build_target_repo"
+      is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")" || exit 1
+      download_asset "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")" "egison.$(uname -m).rpm"
+      commit_package "${_upload_target_repo}" "${LATEST_VERSION}" "egison.$(uname -m).rpm"
       ;;
     *)
       exit 1
