@@ -6,7 +6,7 @@ services:
 matrix:
     include:
         - os: linux
-          env: BUILDER=greymd/egison-package-builder TARGET=egison/egison
+          env: BUILDER=greymd/egison-package-builder TARGET=greymd/egison
 
 before_install:
     - sudo apt update
@@ -21,7 +21,5 @@ script:
     - travis_wait 40 bash -x release.sh upload-tarball "$BUILDER" "$TARGET" "$BUILDER"
     - travis_wait 20 bash -x release.sh upload-rpm "$BUILDER" "$TARGET" "$BUILDER"
     - travis_wait 20 bash -x release.sh upload-deb "$BUILDER" "$TARGET" "$BUILDER"
-    - travis_wait 20 bash -x release.sh upload-packages "$BUILDER" "$TARGET" "$BUILDER"
-## Upload to Egison repository
-    # - travis_wait 20 bash -x release.sh upload-rpm "$BUILDER" "$TARGET" "$TARGET"
-    # - travis_wait 20 bash -x release.sh upload-deb "$BUILDER" "$TARGET" "$TARGET"
+    - travis_wait 20 bash -x release.sh commit-rpm "$BUILDER" "$TARGET" "$BUILDER"
+    - travis_wait 20 bash -x release.sh commit-deb "$BUILDER" "$TARGET" "$BUILDER"
