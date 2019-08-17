@@ -182,7 +182,7 @@ bump_version () {
   git push origin "${TARGET_BRANCH}"
 }
 
-bump_package () {
+commit_package () {
   local _package_builder_repo="$1" ;shift
   local _ver="$1" ;shift
   local _package="$1" ;shift
@@ -295,7 +295,7 @@ main () {
       set_configures "$_package_builder_repo" "$_build_target_repo"
       is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")" || exit 1
       download_asset "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")" "egison.$(uname -m).deb"
-      bump_package "${_upload_target_repo}" "${LATEST_VERSION}" "egison.$(uname -m).deb"
+      commit_package "${_upload_target_repo}" "${LATEST_VERSION}" "egison.$(uname -m).deb"
       ;;
     commit-rpm)
       _package_builder_repo="$2"
@@ -304,7 +304,7 @@ main () {
       set_configures "$_package_builder_repo" "$_build_target_repo"
       is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")" || exit 1
       download_asset "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")" "egison.$(uname -m).rpm"
-      bump_package "${_upload_target_repo}" "${LATEST_VERSION}" "egison.$(uname -m).rpm"
+      commit_package "${_upload_target_repo}" "${LATEST_VERSION}" "egison.$(uname -m).rpm"
       ;;
     *)
       exit 1
