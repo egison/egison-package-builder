@@ -6,7 +6,7 @@ services:
 matrix:
     include:
         - os: linux
-          env: BUILDER=egison/egison-package-builder TARGET=egison/egison
+          env: BUILDER=greymd/egison-package-builder TARGET=egison/egison
 
 before_install:
     - sudo apt update
