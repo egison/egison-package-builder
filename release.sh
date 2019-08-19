@@ -116,10 +116,13 @@ build_rpm () {
   if [[ ! -e "${_tarfile}" ]];then
     build_tarball "${_tarfile}" "${_ver}"
   fi
-  docker run -i "${DOCKERHUB_ACCOUNT}"/egison-rpm-builder bash /tmp/build.sh "${_ver}" > "${_file}"  < "${_tarfile}"
+  docker run -i "${DOCKERHUB_ACCOUNT}"/egison-rpm-builder bash /tmp/build.sh "${_ver}" < "${_tarfile}" > "${_file}"
   file "${_file}"
   ## Result is like : "file.rpm: RPM v3.0 bin i386/x86_64 file-1.2.3"
-  file "${_file}" | grep 'RPM'
+  file "${_file}" | grep 'RPM' || {
+    echo "Failed to create ${_file}" >&2
+    exit 1
+  }
   echo "${_file} is successfully created." >&2
   if [[ ! -s "${_file}" ]];then
     echo "Failed to create '${_file}'"
@@ -134,10 +137,13 @@ build_deb () {
   if [[ ! -e "${_tarfile}" ]];then
     build_tarball "${_tarfile}" "${_ver}"
   fi
-  docker run -i "${DOCKERHUB_ACCOUNT}"/egison-deb-builder bash /tmp/build.sh "${_ver}" > "${_file}" < "${_tarfile}"
+  docker run -i "${DOCKERHUB_ACCOUNT}"/egison-deb-builder bash /tmp/build.sh "${_ver}" < "${_tarfile}" > "${_file}"
   file "${_file}"
   ## Result is like : "file.deb: Debian binary package (format 2.0)"
-  file "${_file}" | grep 'Debian'
+  file "${_file}" | grep 'Debian' || {
+    echo "Failed to create ${_file}" >&2
+    exit 1
+  }
   echo "${_file} is successfully created." >&2
   if [[ ! -s "${_file}" ]];then
     echo "Failed to create '${_file}'"

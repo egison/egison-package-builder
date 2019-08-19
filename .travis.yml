@@ -11,6 +11,9 @@ matrix:
 before_install:
     - sudo apt update
     - sudo apt install -y jq
+    - docker pull greymd/egison-deb-builder:latest
+    - docker pull greymd/egison-rpm-builder:latest
+    - docker pull greymd/egison-tarball-builder:latest
 
 install:
     - true
