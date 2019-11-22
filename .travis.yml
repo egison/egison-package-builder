@@ -6,7 +6,7 @@ services:
 matrix:
     include:
         - os: linux
-          env: BUILDER=egison/egison-package-builder TARGET=egison/egison
+          env: TARGET=egison/egison
 
 before_install:
     - sudo apt update
@@ -20,9 +20,9 @@ install:
 
 script:
     - bash -x release.sh init
-    - travis_wait 20 bash -x release.sh bump "$BUILDER" "$TARGET"
-    - travis_wait 40 bash -x release.sh upload-tarball "$BUILDER" "$TARGET" "$BUILDER"
-    - travis_wait 20 bash -x release.sh upload-rpm "$BUILDER" "$TARGET" "$BUILDER"
-    - travis_wait 20 bash -x release.sh upload-deb "$BUILDER" "$TARGET" "$BUILDER"
-    - travis_wait 20 bash -x release.sh commit-rpm "$BUILDER" "$TARGET" "$BUILDER"
-    - travis_wait 20 bash -x release.sh commit-deb "$BUILDER" "$TARGET" "$BUILDER"
+    - travis_wait 20 bash -x release.sh bump "$TRAVIS_REPO_SLUG" "$TARGET"
+    - travis_wait 40 bash -x release.sh upload-tarball "$TRAVIS_REPO_SLUG" "$TARGET" "$TRAVIS_REPO_SLUG"
+    - travis_wait 20 bash -x release.sh upload-rpm "$TRAVIS_REPO_SLUG" "$TARGET" "$TRAVIS_REPO_SLUG"
+    - travis_wait 20 bash -x release.sh upload-deb "$TRAVIS_REPO_SLUG" "$TARGET" "$TRAVIS_REPO_SLUG"
+    - travis_wait 20 bash -x release.sh commit-rpm "$TRAVIS_REPO_SLUG" "$TARGET" "$TRAVIS_REPO_SLUG"
+    - travis_wait 20 bash -x release.sh commit-deb "$TRAVIS_REPO_SLUG" "$TARGET" "$TRAVIS_REPO_SLUG"
