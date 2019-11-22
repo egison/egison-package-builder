@@ -1,6 +1,6 @@
 FROM phusion/baseimage:latest
-MAINTAINER Yamada, Yasuhiro <greengregson@gmail.com>
-ENV DEBFULLNAME="Yamada, Yasuhiro" DEBEMAIL=greengregson@gmail.com DEBIAN_FRONTEND=noninteractive
+MAINTAINER Yamada, Yasuhiro <yamadagrep@gmail.com>
+ENV DEBFULLNAME="Yamada, Yasuhiro" DEBEMAIL=yamadagrep@gmail.com DEBIAN_FRONTEND=noninteractive
 RUN add-apt-repository -y ppa:hvr/ghc && \
     apt update && \
     apt install -y cabal-install-3.0 ghc-8.8.1 && \

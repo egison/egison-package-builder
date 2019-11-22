@@ -26,7 +26,7 @@ init_ssh () {
   echo "${ID_RSA}" | base64 --decode | gzip -d > "$HOME/.ssh/id_rsa"
   chmod 600 "$HOME/.ssh/id_rsa"
   git config --global user.name "greymd"
-  git config --global user.email "greengregson@gmail.com"
+  git config --global user.email "yamadagrep@gmail.com"
 }
 
 set_configures () {
