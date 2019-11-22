@@ -4,7 +4,7 @@ ENV DEBFULLNAME="Yamada, Yasuhiro" DEBEMAIL=yamadagrep@gmail.com DEBIAN_FRONTEND
 RUN add-apt-repository -y ppa:hvr/ghc && \
     apt update && \
     apt install -y cabal-install-3.0 ghc-8.8.1 && \
-    apt install -y git jq xz-utils && \
+    apt install -y libncurses5-dev git jq xz-utils && \
     ln -s /opt/ghc/bin/ghc /usr/bin/ghc && \
     ln -s /opt/cabal/bin/cabal /usr/bin/cabal
 
