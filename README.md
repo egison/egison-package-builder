@@ -2,28 +2,44 @@
 
 ### `yum`
 
+Install `egison`.
+
 ```
 $ sudo yum install https://git.io/egison.x86_64.rpm
 ```
 
+Install `egison-tutorial`.
+
+```
+$ sudo yum install https://git.io/egison-tutorial.x86_64.rpm
+```
+
 #### Uninstall
 
 ```
-$ sudo yum remove egison
+$ sudo yum remove egison egison-tutorial
 ```
 
-### `apt` or `dpkg`
+### `dpkg`
+
+Install `egison`.
 
 ```
 $ wget https://git.io/egison.x86_64.deb
 $ sudo dpkg -i ./egison.x86_64.deb
-( or $ sudo apt install ./egison.x86_64.deb)
+```
+
+Install `egison-tutorial`.
+
+```
+$ wget https://git.io/egison-tutorial.x86_64.deb
+$ sudo dpkg -i ./egison.x86_64.deb
 ```
 
 #### Uninstall
 
 ```
-$ sudo apt remove egison
+$ sudo apt remove egison egison-tutorial
 ```
 
 # egison-package-builder
