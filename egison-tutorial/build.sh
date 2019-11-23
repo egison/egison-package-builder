@@ -17,8 +17,9 @@ readonly GCC_OPT='-optl-static'
   printf '%s\n%s\n' '#!/bin/sh' 'egison_datadir=/usr/lib/egison-tutorial egison-tutorial-impl "$@"' > ./bin/egison-tutorial
   chmod +x ./bin/egison-tutorial
 
+  mkdir -p ./lib/egison-tutorial
   git clone -b "3.9.3" https://github.com/egison/egison.git
-  cp -rf egison/lib ./lib
+  cp -rf egison/lib ./lib/egison-tutorial/lib
 
   _file="egison-tutorial-3.9.3.x86_64.tar.gz"
   tar zcvf "$_file" -C "$PWD" bin lib .tar2package.yml
