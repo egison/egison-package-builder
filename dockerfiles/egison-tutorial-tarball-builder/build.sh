@@ -10,7 +10,6 @@ readonly GCC_OPT='-optl-static'
   # egison-tutorial repository does not have tags.
   git clone -b "master" https://github.com/egison/egison-tutorial.git "${REPODIR}"
   cd "${REPODIR}"
-  sed -i "\$a  ghc-options:  $GCC_OPT/" egison-tutorial.cabal
   sed -i "/Executable egison-tutorial/,\${s/ghc-options.*/& $GCC_OPT/}" egison-tutorial.cabal
   cabal v2-update
   cabal v2-configure
