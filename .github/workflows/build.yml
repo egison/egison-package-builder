@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  schedule:
+    - cron:  '0 0 * * *'
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y jq
+        docker pull greymd/egison-deb-builder:latest
+        docker pull greymd/egison-rpm-builder:latest
+        docker pull greymd/egison-tarball-builder:latest
+        docker pull greymd/egison-tutorial-tarball-builder:latest
+        docker pull greymd/tar2deb:latest
+        docker pull greymd/tar2rpm:latest
+
+    - name: Deploy egison
+      env:
+        ID_RSA: ${{secrets.ID_RSA}}
+        API_AUTH: ${{secrets.API_AUTH}}
+        TARGET: egison/egison
+      run: |
+        bash release.sh init
+        bash release.sh bump "$GITHUB_REPOSITORY" "$TARGET"
+        bash release.sh upload-tarball "$GITHUB_REPOSITORY" "$TARGET" "$GITHUB_REPOSITORY"
+        bash release.sh upload-rpm "$GITHUB_REPOSITORY" "$TARGET" "$GITHUB_REPOSITORY"
+        bash release.sh upload-deb "$GITHUB_REPOSITORY" "$TARGET" "$GITHUB_REPOSITORY"
+        bash release.sh commit-rpm "$GITHUB_REPOSITORY" "$TARGET" "$GITHUB_REPOSITORY"
+        bash release.sh commit-deb "$GITHUB_REPOSITORY" "$TARGET" "$GITHUB_REPOSITORY"
+
+    - name: Deploy egison-tutorial
+      env:
+        ID_RSA: ${{secrets.ID_RSA}}
+        API_AUTH: ${{secrets.API_AUTH}}
+        TARGET: egison/egison-tutorial
+      run: |
+        bash release_egison-tutorial.sh init
+        bash release_egison-tutorial.sh upload-tarball "$GITHUB_REPOSITORY" "$TARGET" "$GITHUB_REPOSITORY"
+        bash release_egison-tutorial.sh upload-rpm "$GITHUB_REPOSITORY" "$TARGET" "$GITHUB_REPOSITORY"
+        bash release_egison-tutorial.sh upload-deb "$GITHUB_REPOSITORY" "$TARGET" "$GITHUB_REPOSITORY"
+        bash release_egison-tutorial.sh commit-rpm "$GITHUB_REPOSITORY" "$TARGET" "$GITHUB_REPOSITORY"
+        bash release_egison-tutorial.sh commit-deb "$GITHUB_REPOSITORY" "$TARGET" "$GITHUB_REPOSITORY"

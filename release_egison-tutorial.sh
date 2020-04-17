@@ -32,9 +32,9 @@ init_ssh () {
 set_configures () {
   local _package_builder_repo="$1" ;shift
   local _build_target_repo="$1" ;shift
-  LATEST_VERSION=$(get_latest_release "${_build_target_repo}")
-  CURRENT_VERSION=$(get_latest_release "${_package_builder_repo}")
-  readonly FNAME="egison-${LATEST_VERSION}.$(uname -m)"
+  LATEST_VERSION=$(get_latest_release_cabal "${_build_target_repo}") # target repo is basically egison/egison-tutorial
+  CURRENT_VERSION=$(get_latest_release_file "${_package_builder_repo}" "VERSION_egison-tutorial" ) # Repo is egison/egison-package-builder
+  readonly FNAME="egison-tutorial-${LATEST_VERSION}.$(uname -m)"
   RELEASE_ARCHIVE="${TRAVIS_BUILD_DIR:-$THIS_DIR}/${FNAME}"
   readonly LATEST_VERSION CURRENT_VERSION RELEASE_ARCHIVE
 }
@@ -51,24 +51,6 @@ delete_release () {
   local _api_url="https://api.github.com/repos/${_package_builder_repo}/releases"
   curl "${COMMON_HEADER[@]}" \
   -X DELETE "${_api_url}/${_id}"
-}
-
-create_release () {
-  local _package_builder_repo="$1" ;shift
-  local _tag="$1" ;shift
-  local _branch="$1" ;shift
-  local _api_url="https://api.github.com/repos/${_package_builder_repo}/releases"
-  curl "${COMMON_HEADER[@]}" \
-    -X POST \
-    -d '{
-      "tag_name": "'"${_tag}"'",
-      "target_commitish": "'"${_branch}"'",
-      "name": "'"${_tag}"'",
-      "body": "Bump version to '"${_tag}"'",
-      "draft": false,
-      "prerelease": false
-    }' \
-  "${_api_url}"
 }
 
 upload_assets () {
@@ -95,10 +77,43 @@ get_latest_release () {
   rm "./latest.json"
 }
 
+get_latest_release_cabal () {
+  local _repo="$1"
+  echo "get_latest_release_cabal start $_repo" >&2
+  curl --retry 3 -f -v -H "User-Agent: Travis/1.0" \
+       -H "Authorization: token $API_AUTH" \
+       -L "https://raw.githubusercontent.com/${_repo}/master/${_repo/*\/}.cabal" \
+       | awk '/Version:/{print $NF}' > ./latest
+  _ret=$?
+  if [[ $_ret != 0 ]] || [[ ! -s "./latest" ]]; then
+    exit 1
+  fi
+  cat "./latest"
+  rm "./latest"
+  echo "get_latest_release end $_repo" >&2
+}
+
+get_latest_release_file () {
+  local _repo="$1" ;shift
+  local _file="$1"
+  echo "get_latest_release_file start $_repo" >&2
+  curl --retry 3 -f -v -H "User-Agent: Travis/1.0" \
+       -H "Authorization: token $API_AUTH" \
+       -L "https://raw.githubusercontent.com/${_repo}/master/${_file}" \
+       | awk -F- '{print $1}' > ./latest
+  _ret=$?
+  if [[ $_ret != 0 ]] || [[ ! -s "./latest" ]]; then
+    exit 1
+  fi
+  cat "./latest"
+  rm "./latest"
+  echo "get_latest_release end $_repo" >&2
+}
+
 build_tarball () {
   local _file="$1" ;shift
   local _ver="$1"
-  docker run "${DOCKERHUB_ACCOUNT}"/egison-tarball-builder bash /tmp/build.sh "${_ver}" > "${_file}"
+  docker run "${DOCKERHUB_ACCOUNT}"/egison-tutorial-tarball-builder bash /tmp/build.sh "${_ver}" > "${_file}"
   file "${_file}"
   {
     file "${_file}" | grep 'gzip compressed'
@@ -116,7 +131,7 @@ build_rpm () {
   if [[ ! -e "${_tarfile}" ]];then
     build_tarball "${_tarfile}" "${_ver}"
   fi
-  docker run -i "${DOCKERHUB_ACCOUNT}"/egison-rpm-builder bash /tmp/build.sh "${_ver}" < "${_tarfile}" > "${_file}"
+  docker run -i "${DOCKERHUB_ACCOUNT}"/tar2rpm < "${_tarfile}" > "${_file}"
   file "${_file}"
   ## Result is like : "file.rpm: RPM v3.0 bin i386/x86_64 file-1.2.3"
   file "${_file}" | grep 'RPM' || {
@@ -137,7 +152,7 @@ build_deb () {
   if [[ ! -e "${_tarfile}" ]];then
     build_tarball "${_tarfile}" "${_ver}"
   fi
-  docker run -i "${DOCKERHUB_ACCOUNT}"/egison-deb-builder bash /tmp/build.sh "${_ver}" < "${_tarfile}" > "${_file}"
+  docker run -i "${DOCKERHUB_ACCOUNT}"/tar2deb < "${_tarfile}" > "${_file}"
   file "${_file}"
   ## Result is like : "file.deb: Debian binary package (format 2.0)"
   file "${_file}" | grep 'Debian' || {
@@ -158,6 +173,17 @@ release_check () {
   fi
 }
 
+is_releasable () {
+  local _package_builder_repo="$1" ;shift
+  _release_id=$(get_release_list "${_package_builder_repo}" | jq '.[] | select(.tag_name == "'"${LATEST_VERSION}"'") | .id')
+  if [[ "${_release_id}" =~ ^[0-9][0-9]*$ ]]; then
+    return 0
+  else
+    echo "Egison should be released first. Skip build process." >&2
+    return 1
+  fi
+}
+
 bump_version () {
   local _package_builder_repo="$1" ;shift
   local _release_id
@@ -170,20 +196,11 @@ bump_version () {
 
   cd "${THIS_DIR}/${_repo_name}"
 
-  echo "${LATEST_VERSION}-$(date +%s)" > "./VERSION"
+  echo "${LATEST_VERSION}-$(date +%s)" > "./VERSION_egison-tutorial"
 
   # Crete versions and make changes to GitHub
-  git add "./VERSION"
-  git commit -m "[skip ci] Bump version to ${LATEST_VERSION}"
-
-  ## Clean tags just in case
-  _release_id=$(get_release_list "${_package_builder_repo}" | jq '.[] | select(.tag_name == "'"${LATEST_VERSION}"'") | .id')
-  ## If there is already same name of the release, delete it.
-  if [[ "${_release_id}" != "" ]]; then
-    delete_release "${_package_builder_repo}" "${_release_id}" || exit 1
-    git push origin :"${LATEST_VERSION}"  || true
-    git tag -d "${LATEST_VERSION}" || true
-  fi
+  git add "./VERSION_egison-tutorial"
+  git commit -m "[skip ci] Bump version to ${LATEST_VERSION} (egison-tutorial)"
 
   ## Push changes
   git push origin "${TARGET_BRANCH}"
@@ -267,13 +284,13 @@ main () {
       set_configures "$_package_builder_repo" "$_build_target_repo"
       release_check
       bump_version "$_package_builder_repo" ## IT MIGHT BE DESTRUCTIVE!! TAKE CARE THE REPOSITORY NAME!!
-      create_release "$_package_builder_repo" "${LATEST_VERSION}" "${TARGET_BRANCH}"
       ;;
     upload-tarball)
       _package_builder_repo="$2"
       _build_target_repo="$3"
       _upload_target_repo="$4"
       set_configures "$_package_builder_repo" "$_build_target_repo"
+      is_releasable "${_package_builder_repo}" || exit 0
       is_uploaded "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.tar.gz")" && exit 0
       build_tarball "${RELEASE_ARCHIVE}.tar.gz" "${LATEST_VERSION}"
       upload_assets "${_upload_target_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.tar.gz"
@@ -283,6 +300,7 @@ main () {
       _build_target_repo="$3"
       _upload_target_repo="$4"
       set_configures "$_package_builder_repo" "$_build_target_repo"
+      is_releasable "${_package_builder_repo}" || exit 0
       is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")" && exit 0
       build_rpm "${RELEASE_ARCHIVE}.tar.gz" "${RELEASE_ARCHIVE}.rpm" "${LATEST_VERSION}"
       upload_assets "${_upload_target_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.rpm"
@@ -292,6 +310,7 @@ main () {
       _build_target_repo="$3"
       _upload_target_repo="$4"
       set_configures "$_package_builder_repo" "$_build_target_repo"
+      is_releasable "${_package_builder_repo}" || exit 0
       is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")" && exit 0
       build_deb "${RELEASE_ARCHIVE}.tar.gz" "${RELEASE_ARCHIVE}.deb" "${LATEST_VERSION}"
       upload_assets "${_upload_target_repo}" "${LATEST_VERSION}" "${RELEASE_ARCHIVE}.deb"
@@ -301,18 +320,20 @@ main () {
       _build_target_repo="$3"
       _upload_target_repo="$4"
       set_configures "$_package_builder_repo" "$_build_target_repo"
+      is_releasable "${_package_builder_repo}" || exit 0
       is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")" || exit 1
-      download_asset "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")" "egison.$(uname -m).deb"
-      commit_package "${_upload_target_repo}" "${LATEST_VERSION}" "egison.$(uname -m).deb"
+      download_asset "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.deb")" "egison-tutorial.$(uname -m).deb"
+      commit_package "${_upload_target_repo}" "${LATEST_VERSION}" "egison-tutorial.$(uname -m).deb"
       ;;
     commit-rpm)
       _package_builder_repo="$2"
       _build_target_repo="$3"
       _upload_target_repo="$4"
       set_configures "$_package_builder_repo" "$_build_target_repo"
+      is_releasable "${_package_builder_repo}" || exit 0
       is_uploaded "${_upload_target_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")" || exit 1
-      download_asset "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")" "egison.$(uname -m).rpm"
-      commit_package "${_upload_target_repo}" "${LATEST_VERSION}" "egison.$(uname -m).rpm"
+      download_asset "${_package_builder_repo}" "${LATEST_VERSION}" "$(basename "${RELEASE_ARCHIVE}.rpm")" "egison-tutorial.$(uname -m).rpm"
+      commit_package "${_upload_target_repo}" "${LATEST_VERSION}" "egison-tutorial.$(uname -m).rpm"
       ;;
     *)
       exit 1

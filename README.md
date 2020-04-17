@@ -98,3 +98,14 @@ Convert tarball to RPM file.
 $ cat egison.tar.gz | docker run -i <username>/egison-rpm-builder bash /tmp/build.sh <VERSION> > egison.rpm
 ```
 
+### `egison-tutorial-tarball-builder`
+
+* Build Context: `dockerfiles/egison-tutorial-tarball-builder/`
+* Dockerfile location: `Dockerfile`
+* Description:
+Create tarball for `egison-tutorial`.
+
+```
+$ docker run -i <username>/egison-tutorial-tarball-builder <VERSION> > egison.rpm
+```
+
