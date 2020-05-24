@@ -131,7 +131,7 @@ build_rpm () {
   if [[ ! -e "${_tarfile}" ]];then
     build_tarball "${_tarfile}" "${_ver}"
   fi
-  docker run -i "${DOCKERHUB_ACCOUNT}"/tar2rpm < "${_tarfile}" > "${_file}"
+  docker run -i "${DOCKERHUB_ACCOUNT}"/tar2rpm:1.0.1 < "${_tarfile}" > "${_file}"
   file "${_file}"
   ## Result is like : "file.rpm: RPM v3.0 bin i386/x86_64 file-1.2.3"
   file "${_file}" | grep 'RPM' || {
@@ -152,7 +152,7 @@ build_deb () {
   if [[ ! -e "${_tarfile}" ]];then
     build_tarball "${_tarfile}" "${_ver}"
   fi
-  docker run -i "${DOCKERHUB_ACCOUNT}"/tar2deb < "${_tarfile}" > "${_file}"
+  docker run -i "${DOCKERHUB_ACCOUNT}"/tar2deb:1.0.1 < "${_tarfile}" > "${_file}"
   file "${_file}"
   ## Result is like : "file.deb: Debian binary package (format 2.0)"
   file "${_file}" | grep 'Debian' || {

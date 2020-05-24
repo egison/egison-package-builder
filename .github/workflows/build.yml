@@ -22,8 +22,8 @@ jobs:
         docker pull greymd/egison-rpm-builder:latest
         docker pull greymd/egison-tarball-builder:latest
         docker pull greymd/egison-tutorial-tarball-builder:latest
-        docker pull greymd/tar2deb:latest
-        docker pull greymd/tar2rpm:latest
+        docker pull greymd/tar2deb:1.0.1
+        docker pull greymd/tar2rpm:1.0.1
 
     - name: Deploy egison
       env:
