@@ -1,4 +1,4 @@
-FROM phusion/baseimage:latest
+FROM phusion/baseimage:18.04-1.0.0-amd64
 MAINTAINER Yamada, Yasuhiro <yamadagrep@gmail.com>
 ENV DEBFULLNAME="Yamada, Yasuhiro" DEBEMAIL=yamadagrep@gmail.com DEBIAN_FRONTEND=noninteractive
 RUN apt update && \
