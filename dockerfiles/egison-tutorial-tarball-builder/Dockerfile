@@ -1,6 +1,6 @@
 FROM phusion/baseimage:18.04-1.0.0-amd64
-MAINTAINER Yamada, Yasuhiro <yamadagrep@gmail.com>
-ENV DEBFULLNAME="Yamada, Yasuhiro" DEBEMAIL=yamadagrep@gmail.com DEBIAN_FRONTEND=noninteractive
+MAINTAINER Yamada, Yasuhiro <yamada@gr3.ie>
+ENV DEBFULLNAME="Yamada, Yasuhiro" DEBEMAIL=yamada@gr3.ie DEBIAN_FRONTEND=noninteractive
 RUN add-apt-repository -y ppa:hvr/ghc && \
     apt update && \
     apt install -y cabal-install-3.4 ghc-8.10.1 && \
