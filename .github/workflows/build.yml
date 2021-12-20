@@ -4,7 +4,9 @@ on:
   schedule:
     - cron:  '0 0 * * *'
   push:
-    branches: [ master ]
+    branches:
+      - master
+      - 'feature/**'
 
 jobs:
   build:
