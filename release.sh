@@ -11,7 +11,7 @@
 set -xue
 
 readonly THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-DOCKERHUB_ACCOUNT="greymd"
+DOCKERHUB_ACCOUNT="ghcr.io/egison"
 LATEST_VERSION=
 CURRENT_VERSION=
 RELEASE_ARCHIVE=
@@ -25,8 +25,8 @@ init_ssh () {
   printf "Host github.com\\n\\tStrictHostKeyChecking no\\n" >> "$HOME/.ssh/config"
   echo "${ID_RSA}" | base64 --decode | gzip -d > "$HOME/.ssh/id_rsa"
   chmod 600 "$HOME/.ssh/id_rsa"
-  git config --global user.name "greymd"
-  git config --global user.email "yamadagrep@gmail.com"
+  git config --global user.name "GitHub Actions"
+  git config --global user.email "yamada@gr3.ie"
 }
 
 set_configures () {

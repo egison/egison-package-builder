@@ -25,8 +25,8 @@ init_ssh () {
   printf "Host github.com\\n\\tStrictHostKeyChecking no\\n" >> "$HOME/.ssh/config"
   echo "${ID_RSA}" | base64 --decode | gzip -d > "$HOME/.ssh/id_rsa"
   chmod 600 "$HOME/.ssh/id_rsa"
-  git config --global user.name "greymd"
-  git config --global user.email "yamadagrep@gmail.com"
+  git config --global user.name "GitHub Actions"
+  git config --global user.email "yamada@gr3.ie"
 }
 
 set_configures () {
@@ -113,7 +113,7 @@ get_latest_release_file () {
 build_tarball () {
   local _file="$1" ;shift
   local _ver="$1"
-  docker run "${DOCKERHUB_ACCOUNT}"/egison-tutorial-tarball-builder bash /tmp/build.sh "${_ver}" > "${_file}"
+  docker run ghcr.io/egison/egison-tutorial-tarball-builder bash /tmp/build.sh "${_ver}" > "${_file}"
   file "${_file}"
   {
     file "${_file}" | grep 'gzip compressed'
